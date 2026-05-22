@@ -8,6 +8,21 @@ import AppKit
 import Combine
 import SwiftUI
 
+// MARK: - MenuBarIconCacheKey
+
+/// メニューバーアイコンの描画入力を表すキャッシュキー。
+/// 前回と同一であれば ImageRenderer の実行をスキップする。
+private struct MenuBarIconCacheKey: Equatable {
+    struct ProviderEntry: Equatable {
+        let provider: UsageProvider
+        let fetchedAt: Date?
+        let isEnabled: Bool
+    }
+    let providers: [ProviderEntry]
+    let displayMode: UsageDisplayMode
+    let colorScheme: ColorScheme
+}
+
 @MainActor
 final class MenuBarController: NSObject {
     private let statusItem: NSStatusItem
@@ -15,7 +30,11 @@ final class MenuBarController: NSObject {
     private var cancellables: Set<AnyCancellable> = []
     private var appearanceObservation: NSKeyValueObservation?
     private var debounceTask: Task<Void, Never>?
-    private static let debounceMs: UInt64 = 50
+    private static let debounceMs: UInt64 = 300
+    private var lastIconCacheKey: MenuBarIconCacheKey?
+    // addObserver と removeObserver で同じインスタンスを使うために保持する
+    // nonisolated(unsafe): deinit（nonisolated）からアクセスするため
+    nonisolated(unsafe) private var observedAppGroupDefaults: UserDefaults?
 
     // ダッシュボード行のホストビュー（再利用して rootView を更新）
     private var dashboardHostViews: [UsageProvider: NSHostingView<DashboardMenuItemView>] = [:]
@@ -40,11 +59,26 @@ final class MenuBarController: NSObject {
     private func updateButtonImage() {
         let snapshots = appState.viewModel.snapshots
         let displayMode = loadDisplayMode()
+        let colorScheme = resolveButtonColorScheme()
+        let orderedProviders = ProviderOrderStore.loadProviderOrder()
+
+        // 前回の描画入力と同一であれば ImageRenderer をスキップする
+        let cacheKey = MenuBarIconCacheKey(
+            providers: orderedProviders.map { provider in
+                MenuBarIconCacheKey.ProviderEntry(
+                    provider: provider,
+                    fetchedAt: isMenuBarEnabled(provider) ? snapshots[provider]?.fetchedAt : nil,
+                    isEnabled: isMenuBarEnabled(provider)
+                )
+            },
+            displayMode: displayMode,
+            colorScheme: colorScheme
+        )
+        guard cacheKey != lastIconCacheKey else { return }
+        lastIconCacheKey = cacheKey
 
         // メニューバーボタン自身の見た目を基準に ImageRenderer の色を決める。
-        let colorScheme = resolveButtonColorScheme()
-
-        let orderedSnapshots = ProviderOrderStore.loadProviderOrder().map { provider in
+        let orderedSnapshots = orderedProviders.map { provider in
             (provider: provider, snapshot: isMenuBarEnabled(provider) ? snapshots[provider] : nil)
         }
         let content = MenuBarLabelContentView(
@@ -88,17 +122,40 @@ final class MenuBarController: NSObject {
         statusItem.menu = menu
     }
 
-    // MARK: - Combine 監視
+    // MARK: - 変更監視
 
     private func observeChanges() {
         appState.viewModel.objectWillChange
             .sink { [weak self] _ in self?.scheduleImageUpdate() }
             .store(in: &cancellables)
 
-        NotificationCenter.default
-            .publisher(for: UserDefaults.didChangeNotification)
-            .sink { [weak self] _ in self?.scheduleImageUpdate() }
-            .store(in: &cancellables)
+        // UserDefaults.didChangeNotification（全変更）の代わりに
+        // アイコン表示に関係するキーのみを KVO で監視する
+        for key in [
+            UserDefaultsKeys.displayMode,
+            UserDefaultsKeys.menuBarStatusCodexEnabled,
+            UserDefaultsKeys.menuBarStatusClaudeEnabled,
+            UserDefaultsKeys.menuBarStatusCopilotEnabled,
+            UserDefaultsKeys.providerDisplayOrder,
+        ] {
+            UserDefaults.standard.addObserver(self, forKeyPath: key, options: [.new], context: nil)
+        }
+        // addObserver と removeObserver で同じインスタンスを保持する
+        let appGroupDefaults = AppGroupDefaults.shared
+        observedAppGroupDefaults = appGroupDefaults
+        for key in [
+            SharedUserDefaultsKeys.menuBarShowPacemakerValue,
+            UsageColorKeys.statusGreen,
+            UsageColorKeys.statusOrange,
+            UsageColorKeys.statusRed,
+            UsageColorKeys.pacemakerStatusOrange,
+            UsageColorKeys.pacemakerStatusRed,
+            PacemakerThresholdKeys.warningDelta,
+            PacemakerThresholdKeys.dangerDelta,
+            UsageStatusThresholdStore.revisionKey,
+        ] {
+            appGroupDefaults?.addObserver(self, forKeyPath: key, options: [.new], context: nil)
+        }
 
         NotificationCenter.default
             .publisher(for: NSApplication.didChangeScreenParametersNotification)
@@ -122,6 +179,56 @@ final class MenuBarController: NSObject {
             MainActor.assumeIsolated {
                 self?.scheduleImageUpdate()
             }
+        }
+    }
+
+    // KVO コールバック（特定キーの変更時のみ呼ばれる）
+    nonisolated override func observeValue(
+        forKeyPath keyPath: String?,
+        of object: Any?,
+        change: [NSKeyValueChangeKey: Any]?,
+        context: UnsafeMutableRawPointer?
+    ) {
+        // インライン定義: nonisolated コンテキストから @MainActor な型メンバーを参照できないため
+        let allObservedKeys = [
+            "usage_display_mode", "menu_bar_status_codex_enabled",
+            "menu_bar_status_claude_enabled", "menu_bar_status_copilot_enabled",
+            "provider_display_order", "menu_bar_show_pacemaker_value",
+            "usage_color_green", "usage_color_orange", "usage_color_red",
+            "usage_color_pacemaker_status_orange", "usage_color_pacemaker_status_red",
+            "pacemaker_warning_delta", "pacemaker_danger_delta",
+            "usage_color_threshold_revision",
+        ]
+        guard let keyPath, allObservedKeys.contains(keyPath) else {
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+            return
+        }
+        // 設定変更はキャッシュを無効化して強制再描画する
+        Task { @MainActor [weak self] in
+            self?.lastIconCacheKey = nil
+            self?.scheduleImageUpdate()
+        }
+    }
+
+    deinit {
+        let standardKeys = [
+            "usage_display_mode", "menu_bar_status_codex_enabled",
+            "menu_bar_status_claude_enabled", "menu_bar_status_copilot_enabled",
+            "provider_display_order",
+        ]
+        for key in standardKeys {
+            UserDefaults.standard.removeObserver(self, forKeyPath: key)
+        }
+        // addObserver と同じインスタンスで解除する
+        let appGroupKeys = [
+            "menu_bar_show_pacemaker_value",
+            "usage_color_green", "usage_color_orange", "usage_color_red",
+            "usage_color_pacemaker_status_orange", "usage_color_pacemaker_status_red",
+            "pacemaker_warning_delta", "pacemaker_danger_delta",
+            "usage_color_threshold_revision",
+        ]
+        for key in appGroupKeys {
+            observedAppGroupDefaults?.removeObserver(self, forKeyPath: key)
         }
     }
 
