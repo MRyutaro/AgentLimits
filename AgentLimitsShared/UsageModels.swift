@@ -751,6 +751,11 @@ extension UsageWindow {
                   limitWindowSeconds: limitWindowSeconds, usedCount: nil, limitCount: nil)
     }
 
+    /// 週次ウィンドウより長い期間かどうかを返します。
+    var isLongerThanWeeklyWindow: Bool {
+        limitWindowSeconds > UsageLimitDuration.sevenDays + 1
+    }
+
     /// Calculates the pacemaker percentage based on elapsed time within the window.
     /// Returns nil if resetAt is unavailable.
     func calculatePacemakerPercent() -> Double? {
@@ -833,6 +838,17 @@ struct UsageSnapshot: Codable, SnapshotData {
         primaryWindow = try container.decodeIfPresent(UsageWindow.self, forKey: .primaryWindow)
         secondaryWindow = try container.decodeIfPresent(UsageWindow.self, forKey: .secondaryWindow)
         displayMode = try container.decodeIfPresent(UsageDisplayModeRaw.self, forKey: .displayMode) ?? .used
+    }
+}
+
+extension UsageSnapshot {
+    /// 月間のみの使用量スナップショットかどうかを返します。
+    var isSingleMonthlyWindow: Bool {
+        if provider == .githubCopilot {
+            return secondaryWindow == nil
+        }
+        guard let primaryWindow else { return false }
+        return primaryWindow.isLongerThanWeeklyWindow && secondaryWindow == nil
     }
 }
 

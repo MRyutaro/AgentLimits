@@ -27,6 +27,7 @@ xcodebuild test -scheme AgentLimits -destination 'platform=macOS'
    - Codex: `https://chatgpt.com/backend-api/wham/usage`
    - Claude Code: `https://claude.ai/api/organizations/{orgId}/usage`
    - GitHub Copilot: `https://github.com/github-copilot/chat/entitlement`
+   - Codex monthly-only responses are detected from `limit_window_seconds > UsageLimitDuration.sevenDays + 1`, not from `plan_type`; monthly Codex snapshots keep `primaryWindow` and drop `secondaryWindow`.
 3. `UsageViewModel` manages auto-refresh (configurable 1-10 minutes) and per-provider state
 4. `UsageSnapshotStore` persists usage snapshots as JSON under App Group container
 5. `CCUsageFetcher` runs CLI to fetch token usage:
@@ -105,6 +106,7 @@ xcodebuild test -scheme AgentLimits -destination 'platform=macOS'
 - Menu bar is implemented with AppKit `NSStatusItem` + `NSMenu` via `MenuBarController` (no `MenuBarExtra`)
 - Icon label: `MenuBarLabelContentView` rendered to `NSImage` via `ImageRenderer` and set on `NSStatusItem.button`
   - Two-line layout per provider: line 1 = provider name, line 2 = `X% / Y%` (5h/weekly)
+  - Monthly-only providers (Copilot and Codex responses with a primary window longer than weekly) render a single `X%` line instead of `X% / --`
   - Color-coded status; pacemaker indicator `↑` shown when over budget
   - Percentage and arrow colors are adjusted only at menu bar render time: darken by 22% in light color scheme, lighten by 28% in dark color scheme
   - Responds to changes via Combine (`objectWillChange`) for snapshot updates and KVO for specific UserDefaults keys (display mode, menu bar toggles, provider order, pacemaker settings, status colors); 300 ms debounce before re-render
@@ -195,6 +197,11 @@ xcodebuild test -scheme AgentLimits -destination 'platform=macOS'
 - `limitWindowSeconds`: TimeInterval
 - `usedCount`: Int? — used count (Copilot premium interactions)
 - `limitCount`: Int? — limit count (Copilot premium interactions quota)
+
+Monthly-only usage windows:
+- `UsageWindow.isLongerThanWeeklyWindow` returns true when `limitWindowSeconds > UsageLimitDuration.sevenDays + 1`.
+- `UsageSnapshot.isSingleMonthlyWindow` is the shared UI/display helper for Copilot and monthly-only Codex snapshots.
+- Do not add `UsageWindowKind.monthly`; monthly snapshots reuse `.primary` for storage and threshold compatibility.
 
 `AgentLimitsShared/TokenUsageModels.swift` defines token usage snapshots:
 - `provider`: `.codex` or `.claude`

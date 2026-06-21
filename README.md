@@ -2,7 +2,7 @@
 
 **In Development**
 
-AgentLimits is a macOS Sonoma+ menu bar app with Notification Center widgets. It shows usage limits for ChatGPT Codex / Claude Code (5-hour and weekly windows), GitHub Copilot (monthly premium requests), and ccusage token usage.
+AgentLimits is a macOS Sonoma+ menu bar app with Notification Center widgets. It shows usage limits for ChatGPT Codex / Claude Code (5-hour + weekly, or monthly when the provider returns a monthly window), GitHub Copilot (monthly premium requests), and ccusage token usage.
 
 ![](./images/agentlimit_sample.png)
 
@@ -17,7 +17,7 @@ Download the latest build: [Download](https://github.com/Nihondo/AgentLimits/rel
 5. Use the menu bar **Display Mode** to switch Used/Remaining, and **Refresh Now** for manual updates.
 
 ## What It Tracks
-- **Usage limits (Codex / Claude Code):** 5-hour and weekly usage via internal APIs.
+- **Usage limits (Codex / Claude Code):** 5-hour + weekly usage, or monthly usage when the provider returns a monthly window, via internal APIs.
   - Codex: `https://chatgpt.com/backend-api/wham/usage`
   - Claude Code: `https://claude.ai/api/organizations/{orgId}/usage`
 - **Usage limits (GitHub Copilot):** Monthly premium interaction quota via entitlement API.
@@ -32,7 +32,7 @@ Download the latest build: [Download](https://github.com/Nihondo/AgentLimits/rel
 - Two-line layout per provider in the icon area
   - Line 1: provider name
   - Line 2: `X% / Y%` (5-hour / weekly)
-  - For Copilot: `X%` (monthly)
+  - For monthly-only providers such as Copilot or some Codex plans: `X%` (monthly)
 - Display mode: **Used** or **Remaining** (shared across app and widgets)
 - Status colors are based on pacemaker comparison when available (colors are configurable in **Notification** settings)
 - Status colors in the menu bar are automatically darkened or lightened to match the current menu bar text color.
@@ -42,9 +42,9 @@ Download the latest build: [Download](https://github.com/Nihondo/AgentLimits/rel
 
 ### Menu Dashboard
 When you open the menu bar menu, a dashboard appears at the top showing per-provider usage at a glance:
-- Header: provider name · remaining time (5h window) · days until weekly reset
+- Header: provider name · remaining time (5h window) · days until weekly reset, or monthly reset for monthly-only providers
 - **Usage bar**: linear progress bar color-coded by usage level; when pacemaker is exceeded, the bar is segmented (green → orange → red) matching the widget donut ring behavior
-- **Pacemaker bar**: divided into time segments (5h: 5 segments, weekly: 7 segments) with gaps, matching the widget inner ring
+- **Pacemaker bar**: divided into time segments (5h: 5 segments, weekly: 7 segments, monthly: single continuous bar) with gaps, matching the widget inner ring
 - Clicking a dashboard row opens the provider's usage page in the browser
 - Dashboard visibility is configurable per provider in **Usage** settings (**Show dashboard in menu**)
 - Menu also includes: **Display Mode**, **Language** (System/Japanese/English), **Wake Up → Run Now**, **Start app at login**, and **Check for Updates...**
@@ -66,6 +66,7 @@ Pacemaker shows a time-based usage benchmark to help you stay on track.
 ## Widgets
 ### Usage Widgets (Codex / Claude Code)
 - Dual donut gauge: 5-hour and weekly windows side by side
+- Some Codex plans may show a single centered monthly donut when the Codex API returns only a monthly window
 - Color-coded percentage based on usage level and display mode
 - Update time shown as `HH:mm` (or `--:--` if older than 24h)
 
@@ -122,7 +123,7 @@ Pacemaker shows a time-based usage benchmark to help you stay on track.
 1. Open **Notification**.
 2. Request notification permission (first time only).
 3. Select provider (Codex / Claude Code / Copilot).
-4. Configure thresholds for each window (5-hour/weekly for Codex/Claude Code, monthly for Copilot).
+4. Configure thresholds for each window (5-hour/weekly for Codex/Claude Code when available; monthly-only Codex and Copilot use the primary/monthly threshold).
 5. Adjust usage colors (donut + status colors) if needed.
 
 ### Pacemaker

@@ -446,7 +446,7 @@ private struct UsageSummaryView: View {
     private var usageSection: some View {
         Group {
             if let snapshot {
-                if snapshot.provider == .githubCopilot {
+                if snapshot.isSingleMonthlyWindow {
                     UsageWindowRow(title: "content.month".localized(), window: snapshot.primaryWindow, displayMode: displayMode)
                 } else {
                     UsageWindowRow(title: "content.5hours".localized(), window: snapshot.primaryWindow, displayMode: displayMode)

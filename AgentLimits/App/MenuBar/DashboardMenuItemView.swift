@@ -56,8 +56,8 @@ struct DashboardMenuItemView: View {
             Text(provider.displayName)
                 .fontWeight(.semibold)
             Spacer()
-            if provider == .githubCopilot {
-                Label(copilotResetText, systemImage: "calendar")
+            if snapshot.isSingleMonthlyWindow {
+                Label(primaryResetText, systemImage: "calendar")
             } else {
                 Label(primaryRemainingText, systemImage: "clock")
                 Label(secondaryResetText, systemImage: "calendar")
@@ -70,7 +70,7 @@ struct DashboardMenuItemView: View {
 
     @ViewBuilder
     private var windowRows: some View {
-        if provider == .githubCopilot {
+        if snapshot.isSingleMonthlyWindow {
             if let primary = snapshot.primaryWindow {
                 windowRow(label: "mo", window: primary, windowKind: .primary)
             }
@@ -122,7 +122,7 @@ struct DashboardMenuItemView: View {
         return formatResetRelative(resetAt)
     }
 
-    private var copilotResetText: String {
+    private var primaryResetText: String {
         guard let window = snapshot.primaryWindow, let resetAt = window.resetAt else { return "--" }
         return formatResetRelative(resetAt)
     }

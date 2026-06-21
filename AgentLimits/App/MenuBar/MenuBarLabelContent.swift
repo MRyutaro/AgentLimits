@@ -23,6 +23,7 @@ struct MenuBarLabelContentView: View {
                         provider: item.provider,
                         primaryWindow: snapshot.primaryWindow,
                         secondaryWindow: snapshot.secondaryWindow,
+                        isSingleMonthlyWindow: snapshot.isSingleMonthlyWindow,
                         displayMode: displayMode,
                         colorScheme: colorScheme
                     )
@@ -37,6 +38,7 @@ struct MenuBarProviderStatusView: View {
     let provider: UsageProvider
     let primaryWindow: UsageWindow?
     let secondaryWindow: UsageWindow?
+    let isSingleMonthlyWindow: Bool
     let displayMode: UsageDisplayMode
     let colorScheme: ColorScheme
 
@@ -49,6 +51,7 @@ struct MenuBarProviderStatusView: View {
                 provider: provider,
                 primaryWindow: primaryWindow,
                 secondaryWindow: secondaryWindow,
+                isSingleMonthlyWindow: isSingleMonthlyWindow,
                 displayMode: displayMode,
                 colorScheme: colorScheme
             )
@@ -61,6 +64,7 @@ struct MenuBarPercentLineView: View {
     let provider: UsageProvider
     let primaryWindow: UsageWindow?
     let secondaryWindow: UsageWindow?
+    let isSingleMonthlyWindow: Bool
     let displayMode: UsageDisplayMode
     let colorScheme: ColorScheme
     @AppStorage(UserDefaultsKeys.menuBarShowPacemakerValue, store: AppGroupDefaults.shared)
@@ -75,7 +79,7 @@ struct MenuBarPercentLineView: View {
     var body: some View {
         HStack(spacing: 2) {
             percentTextView(primaryWindow, windowKind: .primary)
-            if provider != .githubCopilot {
+            if !isSingleMonthlyWindow {
                 Text("/")
                     .foregroundStyle(.secondary)
                 percentTextView(secondaryWindow, windowKind: .secondary)

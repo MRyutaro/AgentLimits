@@ -220,12 +220,16 @@ private struct UsageDonutRow: View {
     let spacing: CGFloat
     let columnHeight: CGFloat
 
+    private var isSingleMonthlyWindow: Bool {
+        provider == .githubCopilot || (primaryWindow?.isLongerThanWeeklyWindow == true && secondaryWindow == nil)
+    }
+
     private var primaryCenterLabel: String {
-        provider == .githubCopilot ? "1mo" : "5h"
+        isSingleMonthlyWindow ? "1mo" : "5h"
     }
 
     var body: some View {
-        if provider == .githubCopilot {
+        if isSingleMonthlyWindow {
             // Single donut centered layout for monthly providers
             UsageDonutColumnView(
                 provider: provider,
@@ -553,8 +557,12 @@ private struct UsageDetailColumnView: View {
     let primaryWindow: UsageWindow?
     let secondaryWindow: UsageWindow?
 
+    private var isSingleMonthlyWindow: Bool {
+        provider == .githubCopilot || (primaryWindow?.isLongerThanWeeklyWindow == true && secondaryWindow == nil)
+    }
+
     private var primaryTitle: String {
-        provider == .githubCopilot
+        isSingleMonthlyWindow
             ? "widget.monthlyLimit".widgetLocalized()
             : "widget.5hourLimit".widgetLocalized()
     }
@@ -564,10 +572,10 @@ private struct UsageDetailColumnView: View {
             UsageDetailSectionView(
                 title: primaryTitle,
                 window: primaryWindow,
-                showRelative: provider != .githubCopilot,
-                showDateTime: provider == .githubCopilot
+                showRelative: !isSingleMonthlyWindow,
+                showDateTime: isSingleMonthlyWindow
             )
-            if provider != .githubCopilot {
+            if !isSingleMonthlyWindow {
                 UsageDetailSectionView(
                     title: "widget.weeklyLimit".widgetLocalized(),
                     window: secondaryWindow,

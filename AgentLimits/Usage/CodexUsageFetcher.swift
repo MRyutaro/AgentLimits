@@ -34,10 +34,13 @@ extension CodexUsageResponse {
             kind: .primary,
             source: rate_limit?.primary_window
         )
-        let secondary = makeWindow(
-            kind: .secondary,
-            source: rate_limit?.secondary_window
-        )
+        let secondary = primary?.isLongerThanWeeklyWindow == true
+            ? nil
+            : makeWindow(
+                kind: .secondary,
+                source: rate_limit?.secondary_window
+            )
+
         return UsageSnapshot(
             provider: .chatgptCodex,
             fetchedAt: fetchedAt,
