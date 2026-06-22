@@ -10,7 +10,7 @@ import OSLog
 
 /// LaunchAgent configuration constants
 enum LaunchAgentConfig {
-    static let labelPrefix = "com.dmng.agentlimit.wakeup"
+    static let labelPrefix = "com.matsumotoryutaro.agentlimit.wakeup"
     static let launchAgentsPath = "Library/LaunchAgents"
     static let logDirectory = "/tmp"
     static let cliTimeoutSeconds: Int = 30

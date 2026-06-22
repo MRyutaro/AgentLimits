@@ -62,7 +62,7 @@
 ### Wake Up (CLI Scheduler)
 - Schedules CLI commands at user-defined hours via LaunchAgent
 - Commands: `codex exec --skip-git-repo-check "hello"` / `claude -p "hello"`
-- LaunchAgent plist files: `~/Library/LaunchAgents/com.dmng.agentlimit.wakeup-*.plist`
+- LaunchAgent plist files: `~/Library/LaunchAgents/com.matsumotoryutaro.agentlimit.wakeup-*.plist`
 - Logs: `/tmp/agentlimit-wakeup-*.log`
 - Per-provider schedule with additional CLI arguments support
 
@@ -88,7 +88,7 @@
 - Requires `jq`
 
 ## Key Decisions
-- App Group ID: `group.com.dmng.agentlimit`
+- App Group ID: `group.com.matsumotoryutaro.agentlimit`
 - Widget kinds:
   - `AgentLimitWidget` (Codex usage limits)
   - `AgentLimitWidgetClaude` (Claude Code usage limits)
@@ -126,7 +126,7 @@
 
 ### App Group Container
 ```
-~/Library/Group Containers/group.com.dmng.agentlimit/Library/Application Support/AgentLimit/
+~/Library/Group Containers/group.com.matsumotoryutaro.agentlimit/Library/Application Support/AgentLimit/
 ├── usage_snapshot.json           # Codex usage limits
 ├── usage_snapshot_claude.json    # Claude Code usage limits
 ├── token_usage_codex.json        # ccusage Codex

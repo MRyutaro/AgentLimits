@@ -16,7 +16,7 @@
 set -euo pipefail
 
 # App Group identifier
-APP_GROUP="group.com.dmng.agentlimit"
+APP_GROUP="group.com.matsumotoryutaro.agentlimit"
 
 # Snapshot file path
 SNAPSHOT_FILE="$HOME/Library/Group Containers/${APP_GROUP}/Library/Application Support/AgentLimit/usage_snapshot_claude.json"

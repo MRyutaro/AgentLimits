@@ -144,7 +144,7 @@ Pacemaker shows a time-based usage benchmark to help you stay on track.
 - Runs scheduled commands:
   - `codex exec --skip-git-repo-check "hello"`
   - `claude -p "hello"`
-- LaunchAgent plist: `~/Library/LaunchAgents/com.dmng.agentlimit.wakeup-*.plist`
+- LaunchAgent plist: `~/Library/LaunchAgents/com.matsumotoryutaro.agentlimit.wakeup-*.plist`
 - Logs: `/tmp/agentlimit-wakeup-*.log`
 - Additional CLI arguments are supported per provider.
 
@@ -159,7 +159,7 @@ Pacemaker shows a time-based usage benchmark to help you stay on track.
 ## Advanced: Storage (App Group)
 Snapshots are stored in the App Group container:
 ```
-~/Library/Group Containers/group.com.dmng.agentlimit/Library/Application Support/AgentLimit/
+~/Library/Group Containers/group.com.matsumotoryutaro.agentlimit/Library/Application Support/AgentLimit/
 ├── usage_snapshot.json
 ├── usage_snapshot_claude.json
 ├── usage_snapshot_copilot.json

@@ -209,10 +209,10 @@ Monthly-only usage windows:
 - `dailyUsage`: `[DailyUsageEntry]` - Daily usage entries for heatmap (ISO8601 date string + totalTokens)
 - `fetchedAt`: Date
 
-### Storage Paths (App Group: `group.com.dmng.agentlimit`)
+### Storage Paths (App Group: `group.com.matsumotoryutaro.agentlimit`)
 
 ```
-~/Library/Group Containers/group.com.dmng.agentlimit/Library/Application Support/AgentLimit/
+~/Library/Group Containers/group.com.matsumotoryutaro.agentlimit/Library/Application Support/AgentLimit/
 ├── usage_snapshot.json           # Codex usage limits
 ├── usage_snapshot_claude.json    # Claude Code usage limits
 ├── usage_snapshot_copilot.json   # GitHub Copilot usage limits

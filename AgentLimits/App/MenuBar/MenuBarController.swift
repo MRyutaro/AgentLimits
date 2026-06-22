@@ -494,7 +494,7 @@ extension MenuBarController: NSMenuDelegate {
            !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return value
         }
-        return "Copyright © 2025-2026 Nihondo"
+        return "Copyright © 2025-2026 Ryutaro Matsumoto"
     }
 
     @objc private func quit() {

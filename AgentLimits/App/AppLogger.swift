@@ -11,11 +11,11 @@ import OSLog
 ///
 /// Log collection (for user support):
 /// ```bash
-/// log show --predicate 'subsystem == "com.dmng.agentlimit"' --last 1h
+/// log show --predicate 'subsystem == "com.matsumotoryutaro.agentlimit"' --last 1h
 /// log collect --device --last 1h --output ~/Desktop/agentlimits.logarchive
 /// ```
 extension Logger {
-    private static let subsystem = Bundle.main.bundleIdentifier ?? "com.dmng.agentlimit"
+    private static let subsystem = Bundle.main.bundleIdentifier ?? "com.matsumotoryutaro.agentlimit"
 
     /// Wake Up feature: LaunchAgent management and CLI execution
     static let wakeup = Logger(subsystem: subsystem, category: "wakeup")
