@@ -7,7 +7,7 @@ AgentLimits is a macOS Sonoma+ menu bar app with Notification Center widgets. It
 ![](./images/agentlimit_sample.png)
 
 ## Download
-Download the latest build: [Download](https://github.com/Nihondo/AgentLimits/releases/latest/download/AgentLimits.zip)
+Download the latest build: [Download](https://github.com/MRyutaro/AgentLimits/releases/latest/download/AgentLimits.zip)
 
 ## Quick Start (First-Time Setup)
 1. Run AgentLimits.
